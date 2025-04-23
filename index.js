@@ -10,12 +10,11 @@ async function initBrowser() {
 app.post('/fetch', async (req, res) => {
   const { url, waitUntil = 'domcontentloaded' } = req.body;
   if (!url) return res.status(400).send('Missing URL');
-
-  const browser = await chromium.launch({ args: ['--no-sandbox'] });
+  const browser = await initBrowser();
   const page = await browser.newPage();
   try {
     await page.goto(url, { waitUntil, timeout: 60000 });
-    await page.waitForTimeout(5000); // đợi thêm 5s để JS chạy xong
+    await page.waitForTimeout(5000);
     const html = await page.content();
     await browser.close();
     res.send({ html });
@@ -25,11 +24,9 @@ app.post('/fetch', async (req, res) => {
   }
 });
 
-
 app.post('/screenshot', async (req, res) => {
   const { url, fullPage = true } = req.body;
   if (!url) return res.status(400).send('Missing URL');
-
   const browser = await initBrowser();
   const page = await browser.newPage();
   try {
@@ -46,7 +43,6 @@ app.post('/screenshot', async (req, res) => {
 app.post('/pdf', async (req, res) => {
   const { url } = req.body;
   if (!url) return res.status(400).send('Missing URL');
-
   const browser = await initBrowser();
   const page = await browser.newPage();
   try {
@@ -63,11 +59,10 @@ app.post('/pdf', async (req, res) => {
 app.post('/extract', async (req, res) => {
   const { url, selector } = req.body;
   if (!url || !selector) return res.status(400).send('Missing url or selector');
-
   const browser = await initBrowser();
   const page = await browser.newPage();
   try {
-    await page.goto(url, { waitUntil: 'networkidle' });
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
     const content = await page.$$eval(selector, els => els.map(e => e.textContent.trim()));
     await browser.close();
     res.send({ selector, results: content });
@@ -78,5 +73,5 @@ app.post('/extract', async (req, res) => {
 });
 
 app.listen(3000, () => {
-  console.log('Playwright API ready at http://localhost:3000');
+  console.log('✅ Playwright API ready at http://localhost:3000');
 });
