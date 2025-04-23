@@ -6,5 +6,5 @@ services:
       context: .
     container_name: playwright-api
     ports:
-      - "3100:3000"
+      - "13100:3000"
     restart: unless-stopped
