@@ -8,21 +8,23 @@ async function initBrowser() {
 }
 
 app.post('/fetch', async (req, res) => {
-  const { url, waitUntil = 'networkidle' } = req.body;
+  const { url, waitUntil = 'domcontentloaded' } = req.body;
   if (!url) return res.status(400).send('Missing URL');
 
-  const browser = await initBrowser();
+  const browser = await chromium.launch({ args: ['--no-sandbox'] });
   const page = await browser.newPage();
   try {
     await page.goto(url, { waitUntil, timeout: 60000 });
+    await page.waitForTimeout(5000); // đợi thêm 5s để JS chạy xong
     const html = await page.content();
     await browser.close();
-    res.send(html);
+    res.send({ html });
   } catch (err) {
     await browser.close();
     res.status(500).send({ error: err.message });
   }
 });
+
 
 app.post('/screenshot', async (req, res) => {
   const { url, fullPage = true } = req.body;
