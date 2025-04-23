@@ -4,6 +4,7 @@ services:
   playwright-api:
     build:
       context: .
+    dockerfile: Dockerfile
     container_name: playwright-api
     ports:
       - "13100:3000"
