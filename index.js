@@ -3,6 +3,8 @@ const { chromium } = require('playwright');
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
+const DEFAULT_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
 async function initBrowser() {
   return await chromium.launch({ args: ['--no-sandbox'] });
 }
@@ -13,6 +15,7 @@ app.post('/fetch', async (req, res) => {
   const browser = await initBrowser();
   const page = await browser.newPage();
   try {
+    await page.setUserAgent(DEFAULT_UA);
     await page.goto(url, { waitUntil, timeout: 60000 });
     await page.waitForTimeout(5000);
     const html = await page.content();
@@ -30,6 +33,7 @@ app.post('/screenshot', async (req, res) => {
   const browser = await initBrowser();
   const page = await browser.newPage();
   try {
+    await page.setUserAgent(DEFAULT_UA);
     await page.goto(url, { waitUntil: 'networkidle' });
     const buffer = await page.screenshot({ fullPage });
     await browser.close();
@@ -46,6 +50,7 @@ app.post('/pdf', async (req, res) => {
   const browser = await initBrowser();
   const page = await browser.newPage();
   try {
+    await page.setUserAgent(DEFAULT_UA);
     await page.goto(url, { waitUntil: 'networkidle' });
     const pdf = await page.pdf({ format: 'A4' });
     await browser.close();
@@ -62,6 +67,7 @@ app.post('/extract', async (req, res) => {
   const browser = await initBrowser();
   const page = await browser.newPage();
   try {
+    await page.setUserAgent(DEFAULT_UA);
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     const content = await page.$$eval(selector, els => els.map(e => e.textContent.trim()));
     await browser.close();
@@ -73,5 +79,5 @@ app.post('/extract', async (req, res) => {
 });
 
 app.listen(3000, () => {
-  console.log('✅ Playwright API ready at http://localhost:3000');
+  console.log('✅ Playwright API with custom User-Agent ready at http://localhost:3000');
 });
