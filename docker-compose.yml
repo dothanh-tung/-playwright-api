@@ -1,10 +1,8 @@
-version: '3.3'
+version: "3.8"
 
 services:
-  playwright-api:
-    build:
-      context: .
-    container_name: playwright-api
+  zenlike-api:
+    build: .
     ports:
       - "13100:3000"
     restart: unless-stopped
