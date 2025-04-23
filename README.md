@@ -1,13 +1,10 @@
-# 📂 Nội dung:
+# Puppeteer ZenLike API
 
-- [ ] index.js: hỗ trợ 4 endpoint:
+API headless Chrome tự động hoá lấy HTML với khả năng vượt Cloudflare, dùng `puppeteer-extra` và `stealth plugin`.
 
-- [ ] /fetch: lấy HTML
+## 🚀 Cài đặt & Chạy
 
-- [ ] /screenshot: trả ảnh PNG
-
-- [ ] /pdf: trả PDF
-
-- [ ] /extract: trích nội dung theo CSS selector
-
-Dockerfile, package.json, docker-compose.yml: đầy đủ để chạy với Docker hoặc Portainer
+### 1. Clone repo:
+```bash
+git clone https://github.com/your-username/puppeteer-zenlike-api.git
+cd puppeteer-zenlike-api
