@@ -1,10 +1,30 @@
-# Puppeteer ZenLike API
+# Playwright Stealth API (Dockerized)
 
-API headless Chrome tự động hoá lấy HTML với khả năng vượt Cloudflare, dùng `puppeteer-extra` và `stealth plugin`.
+This is a stealth-ready HTML scraping API using Playwright, Docker, and Express.
 
-## 🚀 Cài đặt & Chạy
+## Features
 
-### 1. Clone repo:
+- Stealth mode (bypass bot protection)
+- Proxy support (fixed or random)
+- Custom headers/cookies
+- Screenshot + PDF options
+- Timezone spoofing (e.g. GMT+7)
+- Auto-cleanup for temp files
+
+## Run locally
+
 ```bash
-git clone https://github.com/your-username/puppeteer-zenlike-api.git
-cd puppeteer-zenlike-api
+docker compose up --build
+```
+
+## Sample Payload
+
+```json
+{
+  "url": "https://example.com",
+  "screenshot": true,
+  "pdf": true,
+  "proxy": "random",
+  "timezone": "Asia/Ho_Chi_Minh"
+}
+```

@@ -1,8 +1,11 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  zenlike-api:
+  playwright-api:
     build: .
+    container_name: playwright-api
     ports:
-      - "13100:3000"
-    restart: unless-stopped
+      - "3000:3000"
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+    shm_size: 1gb
