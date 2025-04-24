@@ -5,7 +5,7 @@ services:
     build: .
     container_name: playwright-api
     ports:
-      - "3000:3000"
+      - "13100:3000"
     environment:
       - TZ=Asia/Ho_Chi_Minh
     shm_size: 1gb
