@@ -1,11 +1,15 @@
 version: '3.8'
-
 services:
-  playwright-api:
-    build: .
-    container_name: playwright-api
+  playwright:
+    image: mcr.microsoft.com/playwright:latest
+    container_name: playwright
+    volumes:
+      - ./playwright-tests:/tests
+    working_dir: /tests
+    environment:
+      - NODE_ENV=development
+      - TZ=Asia/Ho_Chi_Minh
+    command: >
+      bash -c "npm init -y && npm install express @playwright/test && node server.js"
     ports:
       - "13100:3000"
-    environment:
-      - TZ=Asia/Ho_Chi_Minh
-    shm_size: 1gb
