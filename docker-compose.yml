@@ -12,4 +12,4 @@ services:
     command: >
       bash -c "npm init -y && npm install express @playwright/test playwright-extra @extra/stealth express-rate-limit && node server.js"
     ports:
-      - "3000:3000"
+      - "13100:3000"
