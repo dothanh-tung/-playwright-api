@@ -1,11 +1,8 @@
 const express = require('express');
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const { chromium } = require('playwright-extra');
 const rateLimit = require('express-rate-limit');
 const app = express();
 const port = 3000;
-
-puppeteer.use(StealthPlugin());
 
 app.use(express.json());
 
@@ -28,22 +25,40 @@ app.get('/fetch', async (req, res) => {
       return res.status(401).json({ error: 'Invalid API key' });
     }
 
-    browser = await puppeteer.launch({
-      headless: 'new',
-      executablePath: '/usr/bin/google-chrome',
+    browser = await chromium.launch({
+      headless: 'new', // Use the new headless mode to reduce detection
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-blink-features=AutomationControlled',
+        '--disable-infobars',
+        '--window-position=0,0',
+        '--ignore-certificate-errors',
+        '--ignore-ssl-errors',
       ],
     });
 
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 720 });
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    const context = await browser.newContext({
+      viewport: { width: 1280, height: 720 },
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      locale: 'en-US',
+      timezoneId: 'Asia/Bangkok',
+      javaScriptEnabled: true,
+      bypassCSP: true,
+    });
+
+    // Manual stealth techniques
+    await context.addInitScript(() => {
+      Object.defineProperty(navigator, 'webdriver', { get: () => false });
+      Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+      Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3] });
+      window.chrome = { runtime: {} };
+    });
+
+    const page = await context.newPage();
 
     await page.goto(url, {
-      waitUntil: 'networkidle0',
+      waitUntil: 'networkidle',
       timeout: 90000,
     });
 
