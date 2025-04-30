@@ -5,17 +5,20 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const port = 3000;
 
+// Helper function to add a delay in Puppeteer
+const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
+
 puppeteer.use(StealthPlugin());
 
 app.use(express.json());
 
-app.use('/fetch', rateLimit({
+app.use('/get-html', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: 'Too many requests, please try again later.' }
 }));
 
-app.get('/fetch', async (req, res) => {
+app.get('/get-html', async (req, res) => {
   let browser;
   try {
     const url = req.query.url || 'https://www.forexfactory.com/calendar';
@@ -47,7 +50,9 @@ app.get('/fetch', async (req, res) => {
       timeout: 90000,
     });
 
-    await page.waitForTimeout(10000);
+    // Replace page.waitForTimeout with delay
+    await delay(10000);
+
     const htmlContent = await page.content();
 
     res.json({

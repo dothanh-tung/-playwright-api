@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 COPY server.js .
-RUN npm init -y && npm install express puppeteer puppeteer-extra puppeteer-extra-plugin-stealth express-rate-limit
+RUN npm init -y && npm install puppeteer@latest puppeteer-extra puppeteer-extra-plugin-stealth express-rate-limit
 
 ENV NODE_ENV=development
 ENV TZ=Asia/Bangkok
