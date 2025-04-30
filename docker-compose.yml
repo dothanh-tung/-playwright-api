@@ -3,8 +3,6 @@ services:
   playwright:
     image: mcr.microsoft.com/playwright:latest
     container_name: playwright
-    volumes:
-      - ./data:/app
     environment:
       - NODE_ENV=development
       - TZ=Asia/Bangkok # UTC+7
