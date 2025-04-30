@@ -7,6 +7,6 @@ services:
       - NODE_ENV=development
       - TZ=Asia/Bangkok
     command: >
-      bash -c "cd /data/compose/* && npm init -y && npm install express @playwright/test playwright-extra playwright-extra-plugin-stealth express-rate-limit && node server.js"
+      bash -c "npm init -y && npm install express @playwright/test playwright-extra playwright-extra-plugin-stealth express-rate-limit && node server.js"
     ports:
       - "13100:3000"
