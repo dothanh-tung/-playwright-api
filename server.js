@@ -1,18 +1,24 @@
 const express = require('express');
-const { chromium } = require('playwright-extra');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const rateLimit = require('express-rate-limit');
 const app = express();
 const port = 3000;
 
+// Helper function to add a delay in Puppeteer
+const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
+
+puppeteer.use(StealthPlugin());
+
 app.use(express.json());
 
-app.use('/fetch', rateLimit({
+app.use('/get-html', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: 'Too many requests, please try again later.' }
 }));
 
-app.get('/fetch', async (req, res) => {
+app.get('/get-html', async (req, res) => {
   let browser;
   try {
     const url = req.query.url || 'https://www.forexfactory.com/calendar';
@@ -25,44 +31,27 @@ app.get('/fetch', async (req, res) => {
       return res.status(401).json({ error: 'Invalid API key' });
     }
 
-    browser = await chromium.launch({
-      headless: 'new', // Use the new headless mode to reduce detection
+    browser = await puppeteer.launch({
+      headless: true, // Change to boolean for compatibility
+      executablePath: '/usr/bin/google-chrome',
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-blink-features=AutomationControlled',
-        '--disable-infobars',
-        '--window-position=0,0',
-        '--ignore-certificate-errors',
-        '--ignore-ssl-errors',
       ],
     });
 
-    const context = await browser.newContext({
-      viewport: { width: 1280, height: 720 },
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      locale: 'en-US',
-      timezoneId: 'Asia/Bangkok',
-      javaScriptEnabled: true,
-      bypassCSP: true,
-    });
-
-    // Manual stealth techniques
-    await context.addInitScript(() => {
-      Object.defineProperty(navigator, 'webdriver', { get: () => false });
-      Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
-      Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3] });
-      window.chrome = { runtime: {} };
-    });
-
-    const page = await context.newPage();
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 720 });
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
     await page.goto(url, {
-      waitUntil: 'networkidle',
+      waitUntil: 'networkidle0',
       timeout: 90000,
     });
 
-    await page.waitForTimeout(10000);
+    await delay(10000);
+
     const htmlContent = await page.content();
 
     res.json({
