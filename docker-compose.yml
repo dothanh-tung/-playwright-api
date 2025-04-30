@@ -7,6 +7,6 @@ services:
       - NODE_ENV=development
       - TZ=Asia/Bangkok # UTC+7
     command: >
-      bash -c "npm init -y && npm install express @playwright/test playwright-extra playwright-extra-plugin-stealth express-rate-limit && node server.js"
+      bash -c "mkdir -p /app && cp /data/compose/*/server.js /app/ && cd /app && rm -rf node_modules package-lock.json && npm cache clean --force && npm init -y && npm install express @playwright/test playwright-extra playwright-extra-plugin-stealth express-rate-limit && node server.js"
     ports:
       - "13100:3000"
