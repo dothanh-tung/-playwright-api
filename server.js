@@ -1,23 +1,24 @@
 const express = require('express');
 const { chromium } = require('playwright-extra');
-const stealth = require('@extra/stealth');
+const { StealthPlugin } = require('playwright-extra-plugin-stealth');
+
 const rateLimit = require('express-rate-limit');
 const app = express();
 const port = 3000;
 
 // Áp dụng plugin stealth để chống phát hiện bot
-chromium.use(stealth());
+chromium.use(StealthPlugin());
 
 app.use(express.json());
 
 // Giới hạn tần suất yêu cầu: 100 yêu cầu mỗi 15 phút
-app.use('/get-html', rateLimit({
+app.use('/fetch', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: 'Too many requests, please try again later.' }
 }));
 
-app.get('/get-html', async (req, res) => {
+app.get('/fetch', async (req, res) => {
   let browser;
   try {
     // Lấy URL từ query parameter
