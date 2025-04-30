@@ -5,7 +5,7 @@ services:
     container_name: playwright
     environment:
       - NODE_ENV=development
-      - TZ=Asia/Bangkok
+      - TZ=Asia/Bangkok # UTC+7
     command: >
       bash -c "npm init -y && npm install express @playwright/test playwright-extra playwright-extra-plugin-stealth express-rate-limit && node server.js"
     ports:
