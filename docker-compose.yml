@@ -3,13 +3,10 @@ services:
   playwright:
     image: mcr.microsoft.com/playwright:latest
     container_name: playwright
-    volumes:
-      - ./:/app
-    working_dir: /app
     environment:
       - NODE_ENV=development
-      - TZ=Asia/Bangkok # UTC+7
+      - TZ=Asia/Bangkok
     command: >
-      bash -c "npm init -y && npm install express @playwright/test playwright-extra playwright-extra-plugin-stealth express-rate-limit && node server.js"
+      bash -c "cd /data/compose/* && npm init -y && npm install express @playwright/test playwright-extra playwright-extra-plugin-stealth express-rate-limit && node server.js"
     ports:
       - "13100:3000"
