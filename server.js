@@ -12,13 +12,13 @@ puppeteer.use(StealthPlugin());
 
 app.use(express.json());
 
-app.use('/get-html', rateLimit({
+app.use('/fetch', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: 'Too many requests, please try again later.' }
 }));
 
-app.get('/get-html', async (req, res) => {
+app.get('/fetch', async (req, res) => {
   let browser;
   try {
     const url = req.query.url || 'https://www.forexfactory.com/calendar';
@@ -27,7 +27,7 @@ app.get('/get-html', async (req, res) => {
     }
 
     const apiKey = req.query.apiKey;
-    if (apiKey !== 'your-secret-key') {
+    if (apiKey !== 'd7900480-1af7-41bb-abc8-98aa19f44782') {
       return res.status(401).json({ error: 'Invalid API key' });
     }
 
