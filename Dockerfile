@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY server.js .
 RUN npm init -y && npm install puppeteer@latest puppeteer-extra puppeteer-extra-plugin-stealth express-rate-limit
+RUN npm install cheerio
 
 ENV NODE_ENV=development
 ENV TZ=Asia/Bangkok
