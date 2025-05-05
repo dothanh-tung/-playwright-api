@@ -20,7 +20,7 @@ app.use(rateLimit({
   message: { error: 'Too many requests, please try again later.' }
 }));
 
-// API hiện tại để lấy HTML
+// API để lấy HTML
 app.get('/fetch', async (req, res) => {
   let browser;
   try {
@@ -71,18 +71,19 @@ app.get('/fetch', async (req, res) => {
   }
 });
 
-// API mới để trích xuất JSON từ class với Cheerio (tự động lấy các trường)
+// API để trích xuất JSON từ class hoặc id với Cheerio
 app.get('/extract', async (req, res) => {
   let browser;
   try {
     const url = req.query.url || 'https://www.forexfactory.com/calendar';
     const className = req.query.class || 'calendar__table'; // Mặc định lấy class calendar__table
+    const ids = req.query.id ? req.query.id.split(',') : []; // Hỗ trợ nhiều id, phân tách bằng dấu phẩy
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       return res.status(400).json({ error: 'Invalid URL. URL must start with http:// or https://' });
     }
 
     const apiKey = req.query.apiKey;
-    if (apiKey !== 'd7900480-1af7-41bb-abc8-98aa19f44782') {
+    if (apiKey !== 'd7900480-1af7-41b-abc8-98aa19f44782') {
       return res.status(401).json({ error: 'Invalid API key' });
     }
 
@@ -112,12 +113,10 @@ app.get('/extract', async (req, res) => {
     // Load HTML vào Cheerio
     const $ = cheerio.load(htmlContent);
 
-    // Trích xuất tự động các trường từ class được chỉ định
-    const elements = $(`.${className}`);
     let extractedData = [];
 
-    elements.each((i, elem) => {
-      const $elem = $(elem);
+    // Hàm trích xuất dữ liệu từ một phần tử
+    const extractElementData = ($elem, isTable = false) => {
       const data = {};
 
       // Lấy tất cả các thuộc tính (attributes)
@@ -132,9 +131,10 @@ app.get('/extract', async (req, res) => {
       // Lấy nội dung HTML của phần tử
       data['html'] = $elem.html() || "";
 
-      // Nếu là bảng (class calendar__table), trích xuất chi tiết hơn từ các hàng con
-      if (className === 'calendar__table') {
+      // Nếu là bảng (calendar__table), trích xuất chi tiết hơn từ các hàng con
+      if (isTable) {
         const rows = $elem.find('tr');
+        const rowDataArray = [];
         rows.each((j, row) => {
           const $row = $(row);
           const rowData = {};
@@ -157,16 +157,45 @@ app.get('/extract', async (req, res) => {
             rowData[`cell_${k}_html`] = $cell.html() || "";
           });
 
-          extractedData.push(rowData);
+          rowDataArray.push(rowData);
         });
-      } else {
-        extractedData.push(data);
+        data['rows'] = rowDataArray;
       }
-    });
+
+      return data;
+    };
+
+    // Nếu có id, ưu tiên tìm theo id
+    if (ids.length > 0) {
+      for (const id of ids) {
+        const $elem = $(`#${id}`);
+        if ($elem.length > 0) {
+          const isTable = $elem.hasClass('calendar__table');
+          const data = extractElementData($elem, isTable);
+          data['id'] = id; // Thêm id vào dữ liệu trả về
+          extractedData.push(data);
+        }
+      }
+    } else {
+      // Nếu không có id, tìm theo class
+      const elements = $(`.${className}`);
+      elements.each((i, elem) => {
+        const $elem = $(elem);
+        const isTable = className === 'calendar__table';
+        const data = extractElementData($elem, isTable);
+        extractedData.push(data);
+      });
+    }
+
+    // Nếu không tìm thấy dữ liệu
+    if (extractedData.length === 0) {
+      return res.status(404).json({ error: `No elements found for id(s): ${ids.join(', ') || 'none'} or class: ${className}` });
+    }
 
     res.json({
       data: extractedData,
       class: className,
+      ids: ids.length > 0 ? ids : null,
       timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })
     });
   } catch (error) {
