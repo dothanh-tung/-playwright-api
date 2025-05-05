@@ -208,6 +208,65 @@ app.get('/extract', async (req, res) => {
   }
 });
 
+
+// API để parse HTML được gửi lên
+app.post('/parse', (req, res) => {
+  try {
+    const { html, apiKey } = req.body;
+
+    // Kiểm tra API key
+    if (apiKey !== 'd7900480-1af7-41bb-abc8-98aa19f44782') {
+      return res.status(401).json({ error: 'Invalid API key' });
+    }
+
+    // Kiểm tra HTML
+    if (!html || typeof html !== 'string') {
+      return res.status(400).json({ error: 'Invalid or missing HTML in request body' });
+    }
+
+    // Load HTML vào Cheerio
+    const $ = cheerio.load(html);
+
+    // Trích xuất danh sách tin tức từ ul.body.flexposts
+    const newsItems = [];
+    $('ul.body.flexposts > li.flexposts__item').each((i, elem) => {
+      const $item = $(elem);
+      const title = $item.find('.flexposts__title a').text().trim();
+      const href = $item.find('.flexposts__title a').attr('href');
+      const link = href ? `https://www.forexfactory.com${href}` : '';
+      const time = $item.find('.flexposts__time').text().trim();
+      const source = $item.find('.flexposts__caption a').attr('data-source') || '';
+      const comments = $item.find('.flexposts__comments a').text().trim() || '0 comments';
+      const imageUrl = $item.find('.flexposts__image img').attr('src')
+        ? `https://www.forexfactory.com${$item.find('.flexposts__image img').attr('src')}`
+        : '';
+
+      newsItems.push({
+        id: link,
+        title,
+        link,
+        time,
+        source,
+        comments,
+        imageUrl
+      });
+    });
+
+    // Nếu không tìm thấy tin tức
+    if (newsItems.length === 0) {
+      return res.status(404).json({ error: 'No news items found in the provided HTML' });
+    }
+
+    res.json({
+      data: newsItems,
+      timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: `Failed to parse HTML: ${error.message}` });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
